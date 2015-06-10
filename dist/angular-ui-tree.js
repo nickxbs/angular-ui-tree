@@ -884,29 +884,56 @@
               e.preventDefault();
 
               if (dragElm) {
-                scope.$treeScope.$apply(function () {
-                  scope.$treeScope.$callbacks.beforeDrop(dragInfo.eventArgs(elements, pos));
-                });
-                // roll back elements changed
-                hiddenPlaceElm.replaceWith(scope.$element);
-                placeElm.remove();
-
-                dragElm.remove();
-                dragElm = null;
-                if (scope.$$apply) {
+                  var needConfirmation = false;
                   scope.$treeScope.$apply(function () {
-                    dragInfo.apply();
-                    scope.$treeScope.$callbacks.dropped(dragInfo.eventArgs(elements, pos));
+                      needConfirmation = scope.$callbacks.beforeDrop(dragInfo.eventArgs(elements, pos));
                   });
-                } else {
-                  bindDrag();
-                }
-                scope.$treeScope.$apply(function () {
-                  scope.$treeScope.$callbacks.dragStop(dragInfo.eventArgs(elements, pos));
-                });
-                scope.$$apply = false;
-                dragInfo = null;
 
+                  // roll back elements changed
+                  hiddenPlaceElm.replaceWith(scope.$element);
+                  placeElm.remove();
+
+                  dragElm.remove();
+                  dragElm = null;
+                  if (needConfirmation) {
+                      scope.$callbacks.confirmationDialog()
+                          .then(function (value) {
+                              scope.$evalAsync(function () { // Necessary to avoid $digest error
+                                  if (value) {
+                                      dragInfo.apply();
+                                      scope.$callbacks.dropped(dragInfo.eventArgs(elements, pos));
+                                  } else {
+                                      bindDrag();
+                                  }
+                                  scope.$callbacks.dragStop(dragInfo.eventArgs(elements, pos));
+                                  scope.$$apply = false;
+                                  dragInfo = null;
+                              });
+                          })
+                          .catch(function (value) {
+                              scope.$evalAsync(function () { // Necessary to avoid $digest error
+                                  bindDrag();
+                                  scope.$callbacks.dragStop(dragInfo.eventArgs(elements, pos));
+                                  scope.$$apply = false;
+                                  dragInfo = null;
+                              });
+                          });
+                  } else {
+                      // If no confirmation dialog needed, we just run the original code
+                      if (scope.$$apply) {
+                          dragInfo.apply();
+                          scope.$treeScope.$apply(function () {
+                              scope.$callbacks.dropped(dragInfo.eventArgs(elements, pos));
+                          });
+                      } else {
+                          bindDrag();
+                      }
+                      scope.$treeScope.$apply(function () {
+                          scope.$callbacks.dragStop(dragInfo.eventArgs(elements, pos));
+                      });
+                      scope.$$apply = false;
+                      dragInfo = null;
+                  }
               }
 
               // Restore cursor in Opera 12.16 and IE

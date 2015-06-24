@@ -108,6 +108,9 @@
             callbacks.beforeDrop = function (event) {
 
             };
+            callbacks.confirmationDialog = function (event) {
+
+            };
 
             scope.$watch(attrs.uiTree, function (newVal, oldVal) {
               angular.forEach(newVal, function (value, key) {

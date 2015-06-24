@@ -12,17 +12,17 @@
    * @description
    * angular-ui-tree.
    */
-    .factory('$uiTreeHelper', ['$document', '$window',
-      function ($document, $window) {
-        return {
+   .factory('$uiTreeHelper', ['$document', '$window',
+    function ($document, $window) {
+      return {
 
           /**
            * A hashtable used to storage data of nodes
            * @type {Object}
            */
-          nodesData: {},
+           nodesData: {},
 
-          setNodeAttribute: function (scope, attrName, val) {
+           setNodeAttribute: function (scope, attrName, val) {
             if (!scope.$modelValue) {
               return null;
             }
@@ -51,7 +51,7 @@
            * @param  {Object} targetElm angular element
            * @return {Bool} check if the node can be dragged.
            */
-          nodrag: function (targetElm) {
+           nodrag: function (targetElm) {
             if (typeof targetElm.attr('data-nodrag') != 'undefined') {
               if (targetElm.attr('data-nodrag') === 'false') {
                 return false;
@@ -66,7 +66,7 @@
            * @param  {[type]} e [description]
            * @return {[type]}   [description]
            */
-          eventObj: function (e) {
+           eventObj: function (e) {
             var obj = e;
             if (e.targetTouches !== undefined) {
               obj = e.targetTouches.item(0);
@@ -128,7 +128,7 @@
 
               isDirty: function () {
                 return this.source.$parentNodesScope != this.parent ||
-                  this.source.index() != this.index;
+                this.source.index() != this.index;
               },
 
               eventArgs: function (elements, pos) {
@@ -175,7 +175,7 @@
            * @param {Object} element Angular element.
            * @returns {String} Height
            */
-          height: function (element) {
+           height: function (element) {
             return element.prop('scrollHeight');
           },
 
@@ -190,7 +190,7 @@
            * @param {Object} element Angular element.
            * @returns {String} Width
            */
-          width: function (element) {
+           width: function (element) {
             return element.prop('scrollWidth');
           },
 
@@ -205,15 +205,18 @@
            * @param {Object} element Angular element.
            * @returns {Object} Object with properties width, height, top and left
            */
-          offset: function (element) {
-            var boundingClientRect = element[0].getBoundingClientRect();
+           offset: function (element) {
+             try {
+              var boundingClientRect = element[0].getBoundingClientRect();                    
+              return {
+                width: element.prop('offsetWidth'),
+                height: element.prop('offsetHeight'),
+                top: boundingClientRect.top + ($window.pageYOffset || $document[0].body.scrollTop || $document[0].documentElement.scrollTop),
+                left: boundingClientRect.left + ($window.pageXOffset || $document[0].body.scrollLeft || $document[0].documentElement.scrollLeft)
+              };
+            } catch(e){
 
-            return {
-              width: element.prop('offsetWidth'),
-              height: element.prop('offsetHeight'),
-              top: boundingClientRect.top + ($window.pageYOffset || $document[0].body.scrollTop || $document[0].documentElement.scrollTop),
-              left: boundingClientRect.left + ($window.pageXOffset || $document[0].body.scrollLeft || $document[0].documentElement.scrollLeft)
-            };
+            }
           },
 
           /**
@@ -228,7 +231,7 @@
            * @param {Object} target Target element
            * @returns {Object} Object with properties offsetX, offsetY, startX, startY, nowX and dirX.
            */
-          positionStarted: function (e, target) {
+           positionStarted: function (e, target) {
             var pos = {};
             pos.offsetX = e.pageX - this.offset(target).left;
             pos.offsetY = e.pageY - this.offset(target).top;
@@ -291,6 +294,6 @@
         };
       }
 
-    ]);
+      ]);
 
 })();
